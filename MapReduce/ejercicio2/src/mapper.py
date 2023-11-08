@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
+import os
 import sys
 
+filename = os.environ['mapreduce_map_input_file'].split('/')[-1]
+user = filename.split('.')[0]
+
 for line in sys.stdin:
-    line = line.strip()
-    user = line.split()[2]  # User is at index 2 in the log format
-    url = line.split()[6]  # URL is at index 6 in the log format
+    data = line.strip().split()
+
+    url = data[3].strip('\"')
+
     if url.endswith('.ps'):
-        # Emit key-value pairs for Problem 1
-        print('user\t%s' % user)
-        # Emit key-value pairs for Problem 2
-        print('url\t%s' % url)
+        print(f'user\t{user}')
+
+    print(f'url\t{url}')
