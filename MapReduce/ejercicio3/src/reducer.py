@@ -2,22 +2,21 @@
 import sys
 
 results = {}
+
 for line in sys.stdin:
-    line = line.strip()
-    wine_type, attribute, value = line.split('\t')
-    attribute = int(attribute)
-    value = float(value)
+    data = line.strip().split('\t')
 
-    if wine_type in results:
-        if attribute in results[wine_type]:
-            results[wine_type][attribute].append(value)
-        else:
-            results[wine_type][attribute] = [value]
-    else:
-        results[wine_type] = {attribute: [value]}
+    wine, attribute, value = data[0], data[1], float(data[2])
 
-for wine_type in results:
-    for attribute in results[wine_type]:
-        mean_value = sum(results[wine_type][attribute]) / \
-            len(results[wine_type][attribute])
-        print('%s\t%s\t%.4f' % (wine_type, attribute, mean_value))
+    if wine not in results:
+        results[wine] = {}
+
+    if attribute not in results[wine]:
+        results[wine][attribute] = []
+
+    results[wine][attribute].append(value)
+
+for wine, attributes in results.items():
+    for attribute, values in attributes.items():
+        mean_value = sum(values) / len(values)
+        print(f"{wine}\t{attribute}\t{mean_value:.4f}")
