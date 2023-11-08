@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
 import sys
 
-current_town = None
-current_town_max, current_town_min = 0, 0
+current_station = None
+station_t_max = -float('inf')
+station_t_min = float('inf')
 
 for line in sys.stdin:
-    line = line.strip()
-    town, temp = line.split('\t', 1)
-    temp = float(temp)
+    data = line.strip().split('\t')
 
-    if current_town == town:
-        if temp < current_town_min:
-            current_town_min = temp
-        if temp > current_town_max:
-            current_town_max = temp
-    else:
-        if current_town:
-            print('%s\t%s' % (current_town, current_town_max))
-            print('%s\t%s' % (current_town, current_town_min))
-        current_town = town
+    station, temp = data[0], float(data[1])
 
-if current_town == current_town:
-    print('%s\t%s' % (current_town, current_town_max))
-    print('%s\t%s' % (current_town, current_town_min))
+    if current_station != station and current_station is not None:
+        print(f'{current_station}\t{station_t_max}\t{station_t_min}')
+        station_t_max, station_t_min = -float('inf'), float('inf')
+
+    station_t_max = max(station_t_max, temp)
+    station_t_min = min(station_t_min, temp)
+    current_station = station
+
+if current_station is not None:
+    print(f'{current_station}\t{station_t_max}\t{station_t_min}')
