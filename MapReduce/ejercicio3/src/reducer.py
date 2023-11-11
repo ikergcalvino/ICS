@@ -19,4 +19,4 @@ for line in sys.stdin:
 for wine, attributes in results.items():
     for attribute, values in attributes.items():
         mean_value = sum(values) / len(values)
-        print(f"{wine}\t{attribute}\t{mean_value:.4f}")
+        print(f'{wine}\t{attribute}\t{mean_value:.4f}')
