@@ -7,8 +7,6 @@ fi
 
 exercise_name="$1"
 reduce_tasks="$2"
-input_dir="$exercise_name/data"
-output_dir="$exercise_name/output"
 
 if [ "$exercise_name" == "ejemplo" ]; then
   display_name="Ejemplo"
@@ -16,27 +14,21 @@ else
   display_name="Ejercicio ${exercise_name##*[!0-9]}"
 fi
 
-clean_hdfs_dir() {
-  hdfs dfs -test -e "$1" && hdfs dfs -rm -r "$1"
-}
+hdfs dfs -test -e "$exercise_name/" && hdfs dfs -rm -r "$exercise_name/"
 
-clean_hdfs_dir "$input_dir"
-
-clean_hdfs_dir "$output_dir"
-
-hdfs dfs -put "$input_dir"
+hdfs dfs -put "/MapReduce/$exercise_name/"
 
 /usr/bin/hadoop \
   jar /usr/lib/hadoop-mapreduce/hadoop-streaming-2.6.0-cdh5.7.0.jar \
   -D mapreduce.job.reduces="$reduce_tasks" \
-  -input "$input_dir/" \
-  -output "$output_dir/" \
+  -input "$exercise_name/data/" \
+  -output "$exercise_name/output/" \
   -mapper "$exercise_name/src/mapper.py" \
   -reducer "$exercise_name/src/reducer.py"
 
-hdfs dfs -get "$output_dir"
+hdfs dfs -get "$exercise_name/output/"
 
-cat "$output_dir/part-*" >> "${exercise_name}_output.txt"
+cat "$exercise_name/output/part-*" >> "${exercise_name}_output.txt"
 python "$exercise_name/src/parser.py"
 rm "${exercise_name}_output.txt"
 
