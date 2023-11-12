@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import sys
 
@@ -15,7 +15,7 @@ for line in sys.stdin:
     t_daily_max, t_daily_min = float(data[5]), float(data[6])
 
     if t_daily_max > HOT_THRESHOLD:
-        print(f'{station}\t{t_daily_max}')
+        print('%s\t%s' % (station, t_daily_max))
 
     if UNKNOWN_DATA < t_daily_min < COLD_THRESHOLD:
-        print(f'{station}\t{t_daily_min}')
+        print('%s\t%s' % (station, t_daily_min))

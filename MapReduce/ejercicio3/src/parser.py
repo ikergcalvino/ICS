@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import json
 
 results = {}
 
-with open('ejercicio3_output.txt') as file:
+with open('/MapReduce/ejercicio3/output/ejercicio3_output.txt') as file:
 
     for line in file:
         data = line.strip().split('\t')

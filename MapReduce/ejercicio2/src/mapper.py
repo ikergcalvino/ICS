@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import sys
 
@@ -11,6 +11,6 @@ for line in sys.stdin:
     url = data[3].strip('\"')
 
     if url.endswith('.ps'):
-        print(f'user\t{user}')
+        print('user\t%s' % user)
 
-    print(f'url\t{url}')
+    print('url\t%s' % url)

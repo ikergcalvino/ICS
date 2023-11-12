@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import sys
 
@@ -13,4 +13,4 @@ for line in sys.stdin:
 
     if not data[0].startswith('"fixed acidity"'):
         for i, value in enumerate(data):
-            print(f'{wine}\t{attributes[i]}\t{value}')
+            print('%s\t%s\t%s' % (wine, attributes[i], value))

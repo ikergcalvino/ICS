@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys
 
 current_station = None
@@ -11,7 +11,7 @@ for line in sys.stdin:
     station, temp = data[0], float(data[1])
 
     if current_station != station and current_station is not None:
-        print(f'{current_station}\t{station_t_max}\t{station_t_min}')
+        print('%s\t%s\t%s' % (current_station, station_t_max, station_t_min))
         station_t_max = -float('inf')
         station_t_min = float('inf')
 
@@ -20,4 +20,4 @@ for line in sys.stdin:
     station_t_min = min(station_t_min, temp)
 
 if current_station is not None:
-    print(f'{current_station}\t{station_t_max}\t{station_t_min}')
+    print('%s\t%s\t%s' % (current_station, station_t_max, station_t_min))

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys
 
 type_key = None
@@ -11,7 +11,7 @@ for line in sys.stdin:
     type, key = data[0], data[1]
 
     if key_value != key and key_value is not None:
-        print(f'{type_key}\t{key_value}\t{count}')
+        print('%s\t%s\t%s' % (type_key, key_value, count))
         count = 0
 
     type_key = type
@@ -19,4 +19,4 @@ for line in sys.stdin:
     count += 1
 
 if key_value is not None:
-    print(f'{type_key}\t{key_value}\t{count}')
+    print('%s\t%s\t%s' % (type_key, key_value, count))
