@@ -30,7 +30,7 @@ hdfs dfs -put $base_dir/data data
   -mapper $base_dir/src/mapper.py \
   -reducer $base_dir/src/reducer.py
 
-hdfs dfs -get output $base_dir/output
+hdfs dfs -get output $base_dir
 
 cat $base_dir/output/part-* >> $base_dir/output/${exercise_name}_output.txt
 python $base_dir/src/parser.py
