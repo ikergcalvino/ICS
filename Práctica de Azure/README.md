@@ -192,8 +192,8 @@ Se utilizaron las imágenes de WordPress y MySQL, descargadas desde DockerHub, p
 
     4. Una vez completada la instalación, podrás observar la configuración en la interfaz de administración de WordPress.
 
-    Una vez completados los pasos anteriores, la aplicación estará disponible en la URL proporcionada por el servicio de aplicaciones web de Azure. [IkerGarciaWebApp](https://ikergarciawebapp.azurewebsites.net)
+    Una vez completados los pasos anteriores, la aplicación estará disponible en la URL proporcionada por el servicio de aplicaciones web de Azure: [IkerGarciaWebApp](https://ikergarciawebapp.azurewebsites.net).
 
     ![Sitio para ics de Iker García Calviño](img/azure17.png)
 
-    Como vemos en la imagen, ya podemos tanto crear y acceder a posts como comentar en ellos.
+    Como vemos en la imagen, ya podemos tanto navegar por la web como crear, ver y comentar en los distintos posts que se encuentran en la web.
