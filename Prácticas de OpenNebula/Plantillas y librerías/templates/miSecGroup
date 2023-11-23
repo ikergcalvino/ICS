@@ -1,0 +1,9 @@
+{
+NAME = "miSecGroup"
+ RULE = [
+ PROTOCOL = ICMP,
+ RULE_TYPE = inbound,
+ ICMP_TYPE = 0, 
+ NETWORK_ID = 0
+ ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "serviceCal",
+  "deployment": "straight",
+  "description": "",
+  "roles": [
+    {
+      "name": "master",
+      "cardinality": 1,
+      "vm_template": 1,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    },
+    {
+      "name": "slave",
+      "cardinality": 3,
+      "vm_template": 1,
+      "parents": [
+        "master"
+      ],
+      "min_vms": 1,
+      "max_vms": 3,
+      "elasticity_policies": [],
+      "scheduled_policies": [
+        {
+          "type": "CARDINALITY",
+          "adjust": 3,
+          "recurrence": "0 9 * * mon,tue,wed,thu,fri"
+        },
+        {
+          "type": "CARDINALITY",
+          "adjust": 2,
+          "recurrence": "0 13 * * mon,tue,wed,thu,fri"
+        },
+        {
+          "type": "CARDINALITY",
+          "adjust": 1,
+          "recurrence": "30 22 * * mon,tue,wed,thu,fri"
+        }
+      ]
+    }
+  ]
+}

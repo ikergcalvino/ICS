@@ -1,0 +1,34 @@
+{
+  "name": "servicioMem",
+  "deployment": "straight",
+  "roles": [
+    {
+      "name": "master",
+      "cardinality": 1,
+      "vm_template": 1,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    },
+    {
+      "name": "slave",
+      "cardinality": 3,
+      "vm_template": 1,
+      "parents": [
+        "master"
+      ],
+      "min_vms": 1,
+      "max_vms": 3,
+      "elasticity_policies": [
+        {
+          "type": "CHANGE",
+          "adjust": -1,
+          "expression": "MEMORY > 64",
+          "period_number": 2,
+          "period": 5,
+          "cooldown": 5
+        }
+      ],
+      "scheduled_policies": []
+    }
+  ]
+}

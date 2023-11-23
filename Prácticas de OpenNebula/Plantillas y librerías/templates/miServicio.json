@@ -1,0 +1,28 @@
+{
+  "name": "miServicio",
+  "deployment": "straight",
+  "default_cooldown": 3,
+  "wait_timeout": 5,
+  "shutdown_action": "terminate-hard",
+  "roles": [
+    {
+      "name": "master",
+      "cardinality": 1,
+      "vm_template": 1,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    },
+    {
+      "name": "slave",
+      "cardinality": 1,
+      "vm_template": 1,
+      "parents": [
+        "master"
+      ],
+      "min_vms": 1,
+      "max_vms": 2,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    }
+  ]
+}

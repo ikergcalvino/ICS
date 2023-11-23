@@ -1,0 +1,7 @@
+NAME = miRouter
+NIC = [
+  NETWORK="vnet",
+  IP="172.16.100.2" ]
+NIC = [
+  NETWORK="miNET",
+  IP="172.16.2.1" ]
