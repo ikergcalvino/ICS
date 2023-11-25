@@ -56,9 +56,12 @@ VBoxManage modifyvm "minione" --natpf1 "OneGate,tcp,,5030,,5030"
 Una vez instanciada la máquina virtual (miniOne) en el hipervisor, accedemos y ejecutamos en modo privilegiado:
 
 ```
-anfitrion> ssh -p 2222 localhost
-miniOne# wget 'https://github.com/OpenNebula/minione/releases/latest/download/minione'
+PS C:\Users\iker> ssh -p 2222 minione@localhost
+
+minione@minione:~$ wget 'https://github.com/OpenNebula/minione/releases/latest/download/minione'
+
 minione@minione:~$ sudo bash minione --force
+
 ### Checks & detection
 Checking cpu virtualization capabilities  SKIP QEMU will be used
 Checking augeas is installed  SKIP will try to install
@@ -67,31 +70,38 @@ Checking apt-transport-https is installed  SKIP will try to install
 Checking AppArmor  SKIP will try to modify
 Checking for present ssh key  SKIP
 Checking (iptables|netfilter)-persistent are installed  SKIP will try to install
+Checking docker is installed  SKIP will try to install
 Checking python3-pip is installed  SKIP will try to install
 Checking ansible  SKIP will try to install
 Checking terraform  SKIP will try to install
 Checking unzip is installed  SKIP will try to install
+
 ### Main deployment steps:
 Install OpenNebula frontend version 6.8
 Install Terraform
+Install Docker
 Configure bridge minionebr with IP 172.16.100.1/24
-Enable NAT over ens160
+Enable NAT over enp0s3
 Modify AppArmor
 Install OpenNebula KVM node
 Export appliance and update VM template
 Install  augeas-tools apt-transport-https iptables-persistent netfilter-persistent python3-pip unzip
 Install pip 'ansible==2.9.9'
-Do you agree? [yes/no]: yes 
-[.....Installation...]
+
+Do you agree? [yes/no]:
+yes
+
+[...Installation...]
+
 ### Report
 OpenNebula 6.8 was installed
 Sunstone is running on:
-  http://10.51.1.220/
+  http://10.0.2.15/
 FireEdge is running on:
-  http://10.51.1.220:2616/
+  http://10.0.2.15:2616/
 Use following to login:
   user: oneadmin
-  password: xFqOY6QEyL
+  password: feUTFIfOou
 ```
 
 ### Verificar que FireEdge está bien configurado
@@ -115,8 +125,8 @@ Para verificar la correcta instalación, acceder al interface web (http://localh
 ```
 user@miniOne: sudo -i
 root@miniOne:~# onehost list
- ID NAME        CLUSTER TVM ALLOCATED_CPU   ALLOCATED_MEM   STAT
-  0 localhost   default 0   0 / 200 (0%)    0K / 3.8G       (0%) on
+ ID NAME        CLUSTER TVM ALLOCATED_CPU   ALLOCATED_MEM STAT
+  0 localhost   default   0  0 / 400 (0%)  0K / 3.8G (0%) on
 ```
 
 ### OpenNebula Cloud API
@@ -140,21 +150,33 @@ Para el uso del Java OpenNebula Cloud API es necesario instalar:
 1. Acceder al GUI de miniOne mediante el usuario oneadmin y añadir todos los cluster, hosts (localhosts), redes (vnet) y datastores (files, system, default) a Virtual Data Centre (VDC) default.
 
 ```
+root@minione:~# onevdc list
+  ID NAME              GROUPS   CLUSTERS      HOSTS      VNETS DATASTORES
+   0 default                2        ALL        ALL        ALL        ALL
 ```
 
 2. Crear un usuario denominado userOne y un grupo denominado groupOne:
-  - El usuario userOne pertenecerá al grupo groupOne.
-  - Tendrá permisos para USE, MANAGE y CREATE sobre imágenes, plantillas y máquinas virtuales sobre la zona OpenNebula sobre los recursos del grupo groupOne.
+    - El usuario userOne pertenecerá al grupo groupOne.
+    - Tendrá permisos para USE, MANAGE y CREATE sobre imágenes, plantillas y máquinas virtuales sobre la zona OpenNebula sobre los recursos del grupo groupOne.
 
 ```
+root@minione:~# oneuser list
+  ID NAME             ENAB GROUP    AUTH            VMS     MEMORY        CPU
+   2 userOne          yes  groupOne core        0 /   -      0M /   0.0 /   -
+   1 serveradmin      yes  oneadmin server_c    0 /   -      0M /   0.0 /   -
+   0 oneadmin         yes  oneadmin core              -          -          -
+
+root@minione:~# oneacl list
+  ID     USER RES_VHNIUTGDCOZSvRMAPtB   RID OPE_UMAC  ZONE
+  13       #2     V--I-T-------------  @100     um-c    #0
 ```
 
 3. Crear una nueva plantilla de MV ttyLinux con los siguientes parámetros:
-  - Hypervisor KVM, 256 Mb RAM y 0,2 CPU de Physical CPU.
-  - Haciendo uso de la imagen ttyLinux-image.
-  - Con una tarjeta en la red vnet y driver emulación *virtio* (teclear texto). Activar conexión RDP y SSH.
-  - CPU Architecture x86_64, bus SATA.
-  - Features: ACPI=no and APIC=no
+    - Hypervisor KVM, 256 Mb RAM y 0,2 CPU de Physical CPU.
+    - Haciendo uso de la imagen ttyLinux-image.
+    - Con una tarjeta en la red vnet y driver emulación *virtio* (teclear texto). Activar conexión RDP y SSH.
+    - CPU Architecture x86_64, bus SATA.
+    - Features: ACPI=no and APIC=no
 
 ```
 ```
