@@ -1,22 +1,37 @@
 {
-  "name": "servicioMem",
+  "name": "miServicio",
   "deployment": "straight",
+  "default_cooldown": 3,
+  "wait_timeout": 5,
+  "shutdown_action": "terminate-hard",
   "roles": [
     {
-      "name": "master",
+      "name": "frontEnd",
       "cardinality": 1,
       "vm_template": 1,
       "elasticity_policies": [],
       "scheduled_policies": []
     },
     {
-      "name": "slave",
-      "cardinality": 3,
+      "name": "server_master",
+      "cardinality": 1,
       "vm_template": 1,
       "parents": [
-        "master"
+        "frontEnd"
       ],
-      "min_vms": 1,
+      "min_vms": 0,
+      "max_vms": 1,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    },
+    {
+      "name": "server_slave",
+      "cardinality": 1,
+      "vm_template": 1,
+      "parents": [
+        "frontEnd"
+      ],
+      "min_vms": 0,
       "max_vms": 3,
       "elasticity_policies": [
         {

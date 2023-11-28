@@ -6,21 +6,33 @@
   "shutdown_action": "terminate-hard",
   "roles": [
     {
-      "name": "master",
+      "name": "frontEnd",
       "cardinality": 1,
       "vm_template": 1,
       "elasticity_policies": [],
       "scheduled_policies": []
     },
     {
-      "name": "slave",
+      "name": "server_master",
       "cardinality": 1,
       "vm_template": 1,
       "parents": [
-        "master"
+        "frontEnd"
       ],
-      "min_vms": 1,
-      "max_vms": 2,
+      "min_vms": 0,
+      "max_vms": 1,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    },
+    {
+      "name": "server_slave",
+      "cardinality": 1,
+      "vm_template": 1,
+      "parents": [
+        "frontEnd"
+      ],
+      "min_vms": 0,
+      "max_vms": 3,
       "elasticity_policies": [],
       "scheduled_policies": []
     }

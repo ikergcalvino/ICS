@@ -355,3 +355,266 @@ root@minione:~# onevnet list
    1 oneadmin oneadmin miNET2     0          minionebr    rdy          1    0    0
    0 oneadmin oneadmin vnet       0          minionebr    rdy          2    0    0
 ```
+
+## Ejercicios Avanzados de OpenNebula
+
+1. Crear dos redes privadas virtuales miNET2 (172.16.2.0/24) y miNET3 (172.16.3.0/24). Instanciar dos nuevas máquinas, a partir de la plantilla ttyLinux, denominadas miLinux2 y miLinux3 en las nuevas redes miNET2 y miNET3.
+
+    Crear un router virtual miRouter que permita encaminar el tráfico entre las dos redes creadas:
+    - Asignar la IP 172.16.2.10 a miLinux2
+    - Asignar la IP 172.16.3.10 a miLinux3
+
+```
+root@minione:~# onevrouter list
+  ID USER     GROUP    NAME
+   0 oneadmin oneadmin miRouter
+```
+
+![Ping de miLinux3 a miLinux2](doc/captura.png)
+
+2. Verificar que está corriendo el servicio opennebula-flow
+
+    `# service opennebula-flow status`
+
+    Crear una plantilla de servicio con una máquina frontEnd como padre de server_master con rol master y server_slave con rol slave (se pueden lanzar hasta 3 máquinas). Reutilizar la plantilla ttyLinux para las máquinas frontEnd, server_master y server_slave. Garantizar que los roles server_master y server_slave no arrancan antes que frontEnd.
+
+```
+root@minione:~# onevm list
+  ID USER     GROUP    NAME                          STAT  CPU     MEM HOST             TIME
+   7 oneadmin oneadmin server_slave_0_(service_1)    runn  0.2    256M localhost    0d 00h03
+   6 oneadmin oneadmin server_master_0_(service_1)   runn  0.2    256M localhost    0d 00h03
+   5 oneadmin oneadmin frontEnd_0_(service_1)        runn  0.2    256M localhost    0d 00h03
+   4 oneadmin oneadmin vr-miRouter-0                 runn    1    512M localhost    0d 00h53
+   3 oneadmin oneadmin miLinux3                      runn  0.2    256M localhost    0d 01h53
+   2 oneadmin oneadmin miLinux2                      runn  0.2    256M localhost    0d 01h54
+   1 oneadmin oneadmin miLinuxSSH                    runn  0.2    256M localhost    0d 02h01
+   0 userOne  groupOne miLinux                       runn  0.2    512M localhost    2d 00h43
+
+root@minione:~# oneflow-template show 0
+SERVICE TEMPLATE 0 INFORMATION
+ID                  : 0
+NAME                : miServicio
+USER                : oneadmin
+GROUP               : oneadmin
+REGISTRATION TIME   : 11/28 12:57:27
+
+PERMISSIONS
+OWNER               : um-
+GROUP               : ---
+OTHER               : ---
+
+TEMPLATE CONTENTS
+{
+  "name": "miServicio",
+  "deployment": "straight",
+  "default_cooldown": 3,
+  "wait_timeout": 5,
+  "shutdown_action": "terminate-hard",
+  "roles": [
+    {
+      "name": "frontEnd",
+      "cardinality": 1,
+      "vm_template": 1,
+      "elasticity_policies": [
+
+      ],
+      "scheduled_policies": [
+
+      ]
+    },
+    {
+      "name": "server_master",
+      "cardinality": 1,
+      "vm_template": 1,
+      "parents": [
+        "frontEnd"
+      ],
+      "min_vms": 0,
+      "max_vms": 1,
+      "elasticity_policies": [
+
+      ],
+      "scheduled_policies": [
+
+      ]
+    },
+    {
+      "name": "server_slave",
+      "cardinality": 1,
+      "vm_template": 1,
+      "parents": [
+        "frontEnd"
+      ],
+      "min_vms": 0,
+      "max_vms": 3,
+      "elasticity_policies": [
+
+      ],
+      "scheduled_policies": [
+
+      ]
+    }
+  ],
+  "description": "",
+  "registration_time": 1701176247
+}
+```
+
+3. Modificar la elasticidad del rol server_slave, para que cuando el valor del atributo MEMORY sea superior a 64, en los 2 últimos periodos de 5 segundos, se disminuya en 1 el pool de máquinas. El tiempo de espera después del escalado será de 5 segundos.
+
+```
+root@minione:~# oneflow show 3
+SERVICE 3 INFORMATION
+ID                  : 3
+NAME                : miServicio
+USER                : oneadmin
+GROUP               : oneadmin
+STRATEGY            : straight
+SERVICE STATE       : RUNNING
+START TIME          : 11/28 16:25:24
+SHUTDOWN            : terminate-hard
+
+PERMISSIONS
+OWNER               : um-
+GROUP               : ---
+OTHER               : ---
+
+ROLE frontEnd
+ROLE STATE          : RUNNING
+VM TEMPLATE         : 1
+CARDINALITY         : 1
+
+NODES INFORMATION
+ VM_ID NAME                     USER            GROUP
+     8 frontEnd_0_(service_3)   oneadmin        oneadmin
+
+ROLE server_master
+ROLE STATE          : RUNNING
+PARENTS             : frontEnd
+VM TEMPLATE         : 1
+CARDINALITY         : 1
+MIN VMS             : 0
+MAX VMS             : 1
+
+NODES INFORMATION
+ VM_ID NAME                     USER            GROUP
+     9 server_master_0_(service oneadmin        oneadmin
+
+ROLE server_slave
+ROLE STATE          : RUNNING
+PARENTS             : frontEnd
+VM TEMPLATE         : 1
+CARDINALITY         : 1
+MIN VMS             : 0
+MAX VMS             : 3
+
+ROLE ELASTICITY
+ADJUST       EXPRESSION               EVALS PERIOD  COOL
+- 1          MEMORY[74532.0] > 64       1/2     5s    5s
+
+NODES INFORMATION
+ VM_ID NAME                     USER            GROUP
+    10 server_slave_0_(service_ oneadmin        oneadmin
+
+LOG MESSAGES
+11/28/23 16:25 [I] New state: DEPLOYING_NETS
+11/28/23 16:25 [I] New state: DEPLOYING
+11/28/23 16:28 [I] New state: RUNNING
+```
+
+4. Ajustar la cardinalidad del rol server_slave para que de lunes a viernes sea 3 a las 9:00, 2 a las 13:00 y 1 a las 22:30 h.
+
+```
+root@minione:~/templates# oneflow show 5
+SERVICE 5 INFORMATION
+ID                  : 5
+NAME                : miServicio
+USER                : oneadmin
+GROUP               : oneadmin
+STRATEGY            : straight
+SERVICE STATE       : RUNNING
+START TIME          : 11/28 16:52:42
+SHUTDOWN            : terminate-hard
+
+PERMISSIONS
+OWNER               : um-
+GROUP               : ---
+OTHER               : ---
+
+ROLE frontEnd
+ROLE STATE          : RUNNING
+VM TEMPLATE         : 1
+CARDINALITY         : 1
+
+NODES INFORMATION
+ VM_ID NAME                     USER            GROUP
+    11 frontEnd_0_(service_5)   oneadmin        oneadmin
+
+ROLE server_master
+ROLE STATE          : RUNNING
+PARENTS             : frontEnd
+VM TEMPLATE         : 1
+CARDINALITY         : 1
+MIN VMS             : 0
+MAX VMS             : 1
+
+NODES INFORMATION
+ VM_ID NAME                     USER            GROUP
+    12 server_master_0_(service oneadmin        oneadmin
+
+ROLE server_slave
+ROLE STATE          : RUNNING
+PARENTS             : frontEnd
+VM TEMPLATE         : 1
+CARDINALITY         : 3
+MIN VMS             : 0
+MAX VMS             : 3
+
+ROLE ELASTICITY
+ADJUST       EXPRESSION               EVALS PERIOD  COOL
+- 1          MEMORY[264910.67] > 64     1/2     5s    5s
+
+ROLE ELASTICITY SCHEDULE
+ADJUST       TIME
+= 3          0 9 * * mon,tue,wed,thu,fri
+= 2          0 13 * * mon,tue,wed,thu,fri
+= 1          30 22 * * mon,tue,wed,thu,fri
+
+NODES INFORMATION
+ VM_ID NAME                     USER            GROUP
+    13 server_slave_0_(service_ oneadmin        oneadmin
+    14 server_slave_1_(service_ oneadmin        oneadmin
+    15 server_slave_2_(service_ oneadmin        oneadmin
+
+LOG MESSAGES
+11/28/23 16:52 [I] New state: DEPLOYING_NETS
+11/28/23 16:52 [I] New state: DEPLOYING
+11/28/23 16:59 [I] New state: RUNNING
+```
+
+5. Utilizando la Java OCA API, programar la creación de una nueva máquina virtual a partir de la plantilla ttyLinux creada en el ejercicio 3 del apartado básico.
+
+```java
+import org.opennebula.client.Client;
+import org.opennebula.client.OneResponse;
+import org.opennebula.client.template.Template;
+
+public class MiniOne {
+
+    public static void main(String[] args) {
+        try {
+            Client oneClient = new Client("oneadmin:feUTFIfOou", null);
+            Template ttyLinux = new Template(2, oneClient);
+            OneResponse response = ttyLinux.instantiate("nueva-maquina");
+            System.out.println("El id de la nueva máquina instanciada es: " + response.getMessage());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+}
+```
+
+```
+El id de la nueva máquina instanciada es: 16
+```

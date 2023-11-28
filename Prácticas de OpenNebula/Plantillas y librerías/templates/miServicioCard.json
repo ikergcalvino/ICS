@@ -1,25 +1,48 @@
 {
-  "name": "serviceCal",
+  "name": "miServicio",
   "deployment": "straight",
-  "description": "",
+  "default_cooldown": 3,
+  "wait_timeout": 5,
+  "shutdown_action": "terminate-hard",
   "roles": [
     {
-      "name": "master",
+      "name": "frontEnd",
       "cardinality": 1,
       "vm_template": 1,
       "elasticity_policies": [],
       "scheduled_policies": []
     },
     {
-      "name": "slave",
+      "name": "server_master",
+      "cardinality": 1,
+      "vm_template": 1,
+      "parents": [
+        "frontEnd"
+      ],
+      "min_vms": 0,
+      "max_vms": 1,
+      "elasticity_policies": [],
+      "scheduled_policies": []
+    },
+    {
+      "name": "server_slave",
       "cardinality": 3,
       "vm_template": 1,
       "parents": [
-        "master"
+        "frontEnd"
       ],
-      "min_vms": 1,
+      "min_vms": 0,
       "max_vms": 3,
-      "elasticity_policies": [],
+      "elasticity_policies": [
+        {
+          "type": "CHANGE",
+          "adjust": -1,
+          "expression": "MEMORY > 64",
+          "period_number": 2,
+          "period": 5,
+          "cooldown": 5
+        }
+      ],
       "scheduled_policies": [
         {
           "type": "CARDINALITY",
