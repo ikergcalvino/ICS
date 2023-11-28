@@ -179,11 +179,68 @@ root@minione:~# oneacl list
     - Features: ACPI=no and APIC=no
 
 ```
+root@minione:~# onetemplate show 1
+TEMPLATE 1 INFORMATION
+ID             : 1
+NAME           : ttyLinux
+USER           : oneadmin
+GROUP          : oneadmin
+LOCK           : None
+REGISTER TIME  : 11/26 11:35:56
+
+PERMISSIONS
+OWNER          : um-
+GROUP          : ---
+OTHER          : ---
+
+TEMPLATE CONTENTS
+CONTEXT=[
+  NETWORK="YES",
+  SSH_PUBLIC_KEY="$USER[SSH_PUBLIC_KEY]" ]
+CPU="0.2"
+DISK=[
+  IMAGE="ttyLinux-image",
+  IMAGE_UNAME="oneadmin" ]
+FEATURES=[
+  ACPI="no",
+  APIC="no" ]
+GRAPHICS=[
+  LISTEN="0.0.0.0",
+  TYPE="VNC" ]
+HOT_RESIZE=[
+  CPU_HOT_ADD_ENABLED="NO",
+  MEMORY_HOT_ADD_ENABLED="NO" ]
+HYPERVISOR="kvm"
+MEMORY="256"
+MEMORY_RESIZE_MODE="BALLOONING"
+MEMORY_UNIT_COST="MB"
+NIC=[
+  NETWORK="vnet",
+  NETWORK_UNAME="oneadmin",
+  RDP="YES",
+  SECURITY_GROUPS="0",
+  SSH="YES" ]
+NIC_DEFAULT=[
+  MODEL="virtio" ]
+OS=[
+  ARCH="x86_64",
+  SD_DISK_BUS="sata" ]
 ```
 
 4. Crear una máquina virtual persistente miLinux a partir de la plantilla ttyLinux creada anteriormente, asignándole la IP 172.16.100.10 (si no disponemos de la imagen, es necesario descargarla del marketplace previamente).
 
 ```
+root@minione:~# ping 172.16.100.10
+PING 172.16.100.10 (172.16.100.10) 56(84) bytes of data.
+64 bytes from 172.16.100.10: icmp_seq=1 ttl=64 time=2.13 ms
+64 bytes from 172.16.100.10: icmp_seq=2 ttl=64 time=0.755 ms
+64 bytes from 172.16.100.10: icmp_seq=3 ttl=64 time=1.51 ms
+64 bytes from 172.16.100.10: icmp_seq=4 ttl=64 time=0.653 ms
+64 bytes from 172.16.100.10: icmp_seq=5 ttl=64 time=0.528 ms
+
+--- 172.16.100.10 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4029ms
+rtt min/avg/max/mdev = 0.528/1.114/2.127/0.611 ms
 ```
 
 5. Realizar una instantánea de la MV creada en el punto anterior. Modificar la IP de la tarjeta eth0 (ifconfig eth0 172.16.100.40) y verificar que podemos hacer ping a la nueva IP. Recuperar la instantánea para ver que restaura el valor inicial y hacer ping a la IP original (172.16.100.10).
@@ -193,29 +250,108 @@ root@minione:~# oneacl list
     `$ ssh -oHostKeyAlgorithms=+ssh-rsa -oKexAlgorithms=+diffie-hellman-group1-sha1 root@172.16.100.10`
 
 ```
+root@minione:~# onevm show 0
+VIRTUAL MACHINE 0 INFORMATION
+
+SNAPSHOTS
+  ID         TIME NAME        HYPERVISOR_ID
+   0  11/26 13:00 instantanea snap-0
+
+CONTEXT=[
+  ...
+  ETH0_IP="172.16.100.10",
+  ... ]
+
+root@minione:~# ping 172.16.100.40
+PING 172.16.100.40 (172.16.100.40) 56(84) bytes of data.
+64 bytes from 172.16.100.40: icmp_seq=1 ttl=64 time=3.77 ms
+64 bytes from 172.16.100.40: icmp_seq=2 ttl=64 time=1.71 ms
+64 bytes from 172.16.100.40: icmp_seq=3 ttl=64 time=0.660 ms
+64 bytes from 172.16.100.40: icmp_seq=4 ttl=64 time=0.750 ms
+64 bytes from 172.16.100.40: icmp_seq=5 ttl=64 time=1.52 ms
+
+--- 172.16.100.40 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4117ms
+rtt min/avg/max/mdev = 0.660/1.681/3.774/1.124 ms
+
+root@minione:~# ping 172.16.100.10
+PING 172.16.100.10 (172.16.100.10) 56(84) bytes of data.
+From 172.16.100.1 icmp_seq=1 Destination Host Unreachable
+From 172.16.100.1 icmp_seq=2 Destination Host Unreachable
+From 172.16.100.1 icmp_seq=3 Destination Host Unreachable
+
+--- 172.16.100.10 ping statistics ---
+5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4089ms
+
+root@minione:~# ping 172.16.100.10
+PING 172.16.100.10 (172.16.100.10) 56(84) bytes of data.
+64 bytes from 172.16.100.10: icmp_seq=1 ttl=64 time=14.4 ms
+64 bytes from 172.16.100.10: icmp_seq=2 ttl=64 time=2.41 ms
+64 bytes from 172.16.100.10: icmp_seq=3 ttl=64 time=1.79 ms
+64 bytes from 172.16.100.10: icmp_seq=4 ttl=64 time=0.775 ms
+64 bytes from 172.16.100.10: icmp_seq=5 ttl=64 time=0.632 ms
+
+--- 172.16.100.10 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4015ms
+rtt min/avg/max/mdev = 0.632/4.002/14.407/5.243 ms
 ```
 
 6. Crear un nuevo disco de 100Mb en formato ext3 y engancharlo a miLinux.
 
 ```
+root@minione:~# onevm show 0
+VIRTUAL MACHINE 0 INFORMATION
+
+VM DISKS
+ ID DATASTORE  TARGET IMAGE             SIZE      TYPE SAVE
+  0 default    vda    miLinux-disk-0    -/200M    file  YES
+  2 default    sda    miLinux-disk-1    -/100M    file   NO
+  1 -          hda    CONTEXT           -/-       -       -
 ```
 
 7. Redimensionar la memoria utilizada por miLinux, pasando de 256 a 512 Mb.
 
 ```
+root@minione:~# onevm list
+  ID USER     GROUP    NAME       STAT  CPU     MEM HOST            TIME
+   0 oneadmin oneadmin miLinux    runn  0.2    256M localhost   1d 04h31
+
+root@minione:~# onevm list
+  ID USER     GROUP    NAME       STAT  CPU     MEM HOST            TIME
+   0 oneadmin oneadmin miLinux    runn  0.2    512M localhost   1d 04h36
 ```
 
 8. Asignar una cuota al usuario userOne para que sólo pueda instanciar UNA máquina. Posteriormente cambiar el propietario de la máquina ttyLinux y de la plantilla ttyLinux a userOne. Verificar que no se puede crear otra máquina con la plantilla ttyLinux para el usuario userOne.
 
 ```
+root@minione:~# onetemplate instantiate ttyLinux --user=userOne --password=userOne --name=miLinuxNew
+[one.template.instantiate] User [2] : user [2] limit of 1 reached for RUNNING_VMS quota in VM.
 ```
 
 9. Crear una instancia de a partir de la plantilla ttyLinux denominada miLinuxSSH. Conectarse por ssh a esta máquina través del host localhost (Enganchar una NIC a la red vnet: IPv4 172.16.100.20).
 
 ```
+root@minione:~# ssh root@172.16.100.20
+Warning: Permanently added '172.16.100.20' (RSA) to the list of known hosts.
+
+Chop wood, carry water.
+
+#
 ```
 
 10. Crear una red privada virtual miNET2 (172.16.2.0/24). Crear una nueva máquina a partir de la plantilla ttyLinux denominada miLinux2 y conectarla a la red miNET2. Crear una red privada virtual miNET3 (172.16.3.0/24). Crear una nueva máquina a partir de la plantilla ttyLinux denominda miLinux3 y conectarla a la red miNET3.
 
 ```
+root@minione:~# onevm list
+  ID USER     GROUP    NAME         STAT  CPU     MEM HOST            TIME
+   3 oneadmin oneadmin miLinux3     runn  0.2    256M localhost   0d 00h01
+   2 oneadmin oneadmin miLinux2     runn  0.2    256M localhost   0d 00h02
+   1 oneadmin oneadmin miLinuxSSH   runn  0.2    256M localhost   0d 00h09
+   0 userOne  groupOne miLinux      runn  0.2    512M localhost   1d 22h51
+
+root@minione:~# onevnet list
+  ID USER     GROUP    NAME       CLUSTERS   BRIDGE       STATE   LEASES OUTD ERRO
+   2 oneadmin oneadmin miNET3     0          minionebr    rdy          1    0    0
+   1 oneadmin oneadmin miNET2     0          minionebr    rdy          1    0    0
+   0 oneadmin oneadmin vnet       0          minionebr    rdy          2    0    0
 ```
